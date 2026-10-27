@@ -1,5 +1,6 @@
 # Enterprise Supply Chain Traceability & Order Management Hub
 
+
 A production-shaped, full-stack supply chain application built with **JavaScript, Node.js, GraphQL, and Tailwind CSS**. It stitches purchase orders, supplier risk, shipments, and product chain-of-custody data into a single GraphQL gateway and an accessible vanilla-JavaScript dashboard.
 
 The runtime has **zero npm dependencies**. Tailwind is used only at build time; the compiled stylesheet is committed, so the app starts with `node server.js` on a clean machine.
@@ -338,5 +339,6 @@ supply-chain-hub/
 ## License
 
 MIT. See [LICENSE](LICENSE).
-#   e n t e r p r i s e S u p p l y C h a i n H u b  
+#   e n t e r p r i s e S u p p l y C h a i n H u b 
+ 
  
