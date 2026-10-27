@@ -16,6 +16,7 @@ The runtime has **zero npm dependencies**. Tailwind is used only at build time; 
 | Supplier portfolio | Risk level, on-time rate, lead time, certifications, active commitments, product catalog |
 | Shipments | Carrier, mode, ETA, delay hours, temperature control, milestone timeline |
 | Product traceability | Lot codes, serial ranges, facility path, certificate references, custody events |
+
 | Tamper-evident chain | SHA-256 hash chain per lot, recomputed on every read; one seeded exception demonstrates detection |
 | GraphQL gateway | Hand-written lexer, parser, validator, executor, and federation-lite schema stitcher across three subgraphs |
 | Accessible UI | WCAG 2.1 AA-targeted landmarks, skip link, focus management, keyboard tables, live regions, labelled forms, SVG chart data tables |
