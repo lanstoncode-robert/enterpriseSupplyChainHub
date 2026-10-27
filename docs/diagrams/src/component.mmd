@@ -1,0 +1,83 @@
+flowchart TB
+    classDef browser fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+    classDef node fill:#ecfeff,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+    classDef store fill:#eef2ff,stroke:#4338ca,stroke-width:1.5px,color:#312e81
+    classDef external fill:#fff7ed,stroke:#c2410c,stroke-width:1.5px,color:#7c2d12
+
+    subgraph Browser["Browser SPA"]
+        direction LR
+        Shell[App shell]
+        Router[Router]
+        Client[GraphQL client]
+        Auth[Token store]
+        Loader[Microfrontend loader]
+        MFs[Dashboard · Orders<br/>Traceability · Suppliers]
+        UI[UI kit · charts · safe HTML]
+        Shell --> Router
+        Shell --> Loader
+        Shell --> Client
+        Client --> Auth
+        Loader --> MFs
+        MFs --> UI
+    end
+
+    Proxy[Reverse proxy<br/>TLS · HSTS · optional OIDC]:::external
+
+    subgraph NodeApp["Node.js process"]
+        direction TB
+
+        subgraph Edge["HTTP edge"]
+            direction LR
+            HTTP[HTTP app]
+            Security[Security · CORS<br/>auth · rate limit]
+            Static[Static server]
+            HTTP --> Security
+            HTTP --> Static
+        end
+
+        subgraph Gateway["GraphQL gateway"]
+            direction LR
+            Handler[GraphQL handler]
+            Parser[Lexer + parser]
+            Validator[Validator]
+            Executor[Executor]
+            Stitcher[Schema stitcher]
+            Schema[(Compiled schema)]:::store
+            Handler --> Parser
+            Parser --> Validator
+            Validator --> Executor
+            Stitcher --> Schema
+            Executor --> Schema
+        end
+
+        subgraph Domain["Domain and data"]
+            direction LR
+            Orders[Orders + risk]
+            Trace[Traceability + chain]
+            Metrics[Metrics]
+            Repo[Repository + loaders]
+            Store[(JsonStore<br/>JSON file)]:::store
+            Orders --> Repo
+            Trace --> Repo
+            Metrics --> Repo
+            Repo --> Store
+        end
+
+        Obs[Logger + counters]:::node
+        HTTP -->|"serves assets"| Static
+        HTTP -->|"POST /graphql"| Handler
+        Security -->|"authorized document"| Parser
+        Executor --> Orders
+        Executor --> Trace
+        Executor --> Metrics
+        Stitcher --> Orders
+        Stitcher --> Trace
+        HTTP --> Obs
+    end
+
+    Prom[Prometheus / logs]:::external
+
+    Client -->|"HTTPS request; receives JSON"| Proxy
+    Proxy -->|"HTTP 8080"| HTTP
+    Static -->|"HTML · CSS · JS · manifest"| Shell
+    Obs -->|"stdout / metrics"| Prom

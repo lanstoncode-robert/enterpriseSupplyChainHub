@@ -1,0 +1,19 @@
+C4Context
+    title System Context - Enterprise Supply Chain Hub
+
+    Person(planner, "Supply Chain Planner", "Plans orders and monitors risk")
+    Person(auditor, "Compliance Auditor", "Checks lot evidence and integrity")
+    Person(admin, "Platform Administrator", "Deploys and configures the service")
+
+    System(hub, "Supply Chain Hub", "Order management, shipments, and chain-of-custody verification")
+
+    System_Ext(erp, "ERP / supplier systems", "Reference data; imported by the seed in this build")
+    System_Ext(mon, "Monitoring stack", "Prometheus, log collector, probes")
+
+    Rel(planner, hub, "Uses", "HTTPS")
+    Rel(auditor, hub, "Queries evidence", "HTTPS")
+    Rel(admin, hub, "Operates", "HTTPS / ops")
+    Rel(erp, hub, "Reference data", "Offline seed")
+    Rel(hub, mon, "Logs, metrics, health", "stdout / HTTP")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

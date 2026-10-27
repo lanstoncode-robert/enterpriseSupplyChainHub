@@ -1,0 +1,50 @@
+flowchart LR
+    classDef actor fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+    classDef process fill:#ecfeff,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+    classDef store fill:#eef2ff,stroke:#4338ca,stroke-width:1.5px,color:#312e81
+    classDef external fill:#fff7ed,stroke:#c2410c,stroke-width:1.5px,color:#7c2d12
+
+    Users([Business users<br/>Planner · Operations · Auditor]):::actor
+    Monitor[Monitoring stack]:::external
+
+    subgraph Hub["Supply Chain Hub"]
+        direction TB
+        P1((P1 API edge))
+        P2((P2 GraphQL execution))
+        P3((P3 Order domain))
+        P4((P4 Traceability domain))
+        P5((P5 Metrics aggregation))
+        P6((P6 Static delivery))
+        P7((P7 Observability))
+
+        D1[(D1 JSON datastore)]:::store
+        D2[(D2 Compiled schema)]:::store
+        D3[(D3 Logs & metrics)]:::store
+        D4[(D4 Static bundle)]:::store
+    end
+
+    Users -->|"HTTPS: dashboard and assets"| P6
+    P6 -->|"HTML, CSS, JS"| Users
+    Users -->|"GraphQL queries and mutations"| P1
+    P1 -->|"JSON response + request ID"| Users
+
+    P1 -->|"authorized GraphQL document"| P2
+    P1 -->|"request metadata"| P7
+    P7 -->|"structured events and counters"| D3
+    D3 -->|"scrape / tail"| Monitor
+
+    D2 -->|"compiled schema"| P2
+    P2 -->|"order and product fields"| P3
+    P2 -->|"trace and verification fields"| P4
+    P2 -->|"metrics fields"| P5
+
+    P3 <-->|"orders, lines, suppliers"| D1
+    P4 <-->|"lots and custody events"| D1
+    P5 -->|"aggregate read model"| D1
+
+    P3 -->|"order projections"| P2
+    P4 -->|"records and chain status"| P2
+    P5 -->|"KPI object"| P2
+    P2 -->|"data and errors"| P1
+
+    D4 -->|"read asset"| P6

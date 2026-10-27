@@ -1,0 +1,56 @@
+# ---------------------------------------------------------------------------
+# systemd unit for a VM/bare-metal deployment.
+#
+# Install:
+#   sudo useradd --system --home /opt/supply-chain-hub --shell /usr/sbin/nologin supplyhub
+#   sudo mkdir -p /opt/supply-chain-hub /var/lib/supply-chain-hub
+#   sudo rsync -a --exclude node_modules --exclude data ./ /opt/supply-chain-hub/
+#   sudo chown -R supplyhub:supplyhub /opt/supply-chain-hub /var/lib/supply-chain-hub
+#   sudo install -m 0640 -o root -g supplyhub deploy/supply-chain-hub.env /etc/supply-chain-hub.env
+#   sudo cp deploy/supply-chain-hub.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now supply-chain-hub
+# ---------------------------------------------------------------------------
+[Unit]
+Description=Enterprise Supply Chain Traceability & Order Management Hub
+Documentation=https://github.com/your-org/supply-chain-hub
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=supplyhub
+Group=supplyhub
+WorkingDirectory=/opt/supply-chain-hub
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=8080
+Environment=DATA_DIR=/var/lib/supply-chain-hub
+Environment=LOG_LEVEL=info
+Environment=TRUST_PROXY=1
+EnvironmentFile=/etc/supply-chain-hub.env
+ExecStart=/usr/bin/node /opt/supply-chain-hub/server.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+KillSignal=SIGTERM
+SyslogIdentifier=supply-chain-hub
+UMask=0027
+LimitNOFILE=65535
+
+# Hardening: the service only needs its install directory and data directory.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/supply-chain-hub
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

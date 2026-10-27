@@ -1,0 +1,32 @@
+# Render Blueprint for the Docker deployment.
+# The disk requires a paid instance type; keep DATA_DIR pointed at its mount.
+services:
+  - type: web
+    name: supply-chain-hub
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /healthz
+    autoDeploy: true
+    disk:
+      name: hub-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: DATA_DIR
+        value: /data
+      - key: TRUST_PROXY
+        value: "1"
+      - key: ENABLE_HSTS
+        value: "1"
+      - key: API_TOKEN
+        generateValue: true
+      - key: READ_ONLY
+        value: "false"
+      - key: LOG_LEVEL
+        value: info

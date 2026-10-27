@@ -1,0 +1,17 @@
+C4Container
+    title Container diagram - Enterprise Supply Chain Hub
+
+    Person(planner, "Supply Chain Planner", "Plans orders and monitors risk")
+
+    System_Boundary(hub, "Supply Chain Hub") {
+        Container(web, "Web application", "Vanilla JS, Tailwind CSS", "Accessible SPA and GraphQL client")
+        Container(api, "GraphQL gateway", "Node.js 22", "Stitched API, auth, static delivery")
+        ContainerDb(store, "JSON datastore", "Single JSON file", "Persistent domain state")
+    }
+
+    Rel(planner, web, "Uses", "HTTPS")
+    Rel(web, api, "GraphQL", "JSON")
+    Rel(api, store, "Reads and writes", "File I/O")
+
+    UpdateRelStyle(web, api, $offsetX="0", $offsetY="-30")
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

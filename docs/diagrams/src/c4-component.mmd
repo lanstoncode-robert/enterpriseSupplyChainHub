@@ -1,0 +1,24 @@
+flowchart LR
+    classDef container fill:#e8f1fb,stroke:#1d4ed8,stroke-width:1.5px,color:#0f172a
+    classDef component fill:#ecfeff,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+    classDef store fill:#eef2ff,stroke:#4338ca,stroke-width:1.5px,color:#312e81
+    classDef ext fill:#fff7ed,stroke:#c2410c,stroke-width:1.5px,color:#7c2d12
+
+    Web[Web application<br/>Vanilla JS · Tailwind CSS]:::container
+
+    subgraph API["Node.js process"]
+        direction TB
+        Edge[HTTP edge<br/>routing · auth · limits]:::component
+        Engine[GraphQL engine<br/>parse · validate · execute]:::component
+        Stitcher[Schema stitcher<br/>orders + traceability + gateway]:::component
+        Domain[Domain modules<br/>orders · risk · hash chain]:::component
+        Repo[Repository<br/>queries · mutations · loaders]:::component
+        Store[(JSON store<br/>supply-chain.json)]:::store
+    end
+
+    Web -->|"GraphQL / HTTPS"| Edge
+    Edge -->|"authorized document"| Engine
+    Stitcher -.->|"composed schema"| Engine
+    Engine -->|"resolves fields"| Domain
+    Domain -->|"reads / writes"| Repo
+    Repo -->|"atomic persistence"| Store

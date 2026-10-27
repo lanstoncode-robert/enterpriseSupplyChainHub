@@ -1,0 +1,141 @@
+classDiagram
+    direction LR
+
+    class Supplier {
+        <<entity>>
+        +String id
+        +String name
+        +String country
+        +String region
+        +String riskLevel
+        +Float onTimeRate
+        +Int leadTimeDays
+    }
+
+    class Product {
+        <<entity>>
+        +String id
+        +String sku
+        +String name
+        +String category
+        +Float unitPrice
+        +String supplierId
+        +String originFacilityId
+    }
+
+    class Facility {
+        <<entity>>
+        +String id
+        +String name
+        +String type
+        +String city
+        +String country
+    }
+
+    class PurchaseOrder {
+        <<entity>>
+        +String id
+        +String poNumber
+        +String supplierId
+        +OrderStatus status
+        +Priority priority
+        +Float totalValue
+        +DateTime expectedDeliveryAt
+        +allowedTransitions() OrderStatus
+        +risk(now) RiskAssessment
+    }
+
+    class OrderLine {
+        <<entity>>
+        +String id
+        +String orderId
+        +String productId
+        +Int quantity
+        +Int receivedQuantity
+        +LineStatus status
+        +lineTotal() Float
+    }
+
+    class Shipment {
+        <<entity>>
+        +String id
+        +String orderId
+        +String carrier
+        +String mode
+        +ShipmentStatus status
+        +Int delayHours
+    }
+
+    class ShipmentMilestone {
+        <<entity>>
+        +String status
+        +DateTime occurredAt
+        +String location
+    }
+
+    class TraceabilityRecord {
+        <<entity>>
+        +String id
+        +String lotCode
+        +String orderId
+        +String productId
+        +String supplierId
+        +Float quantity
+        +chainVerified() Boolean
+    }
+
+    class TraceEvent {
+        <<entity>>
+        +String id
+        +String recordId
+        +Int sequence
+        +TraceEventType type
+        +String previousHash
+        +String integrityHash
+    }
+
+    class OrderStatusChange {
+        <<entity>>
+        +String status
+        +DateTime at
+        +String note
+    }
+
+    class OrderStateMachine {
+        <<service>>
+        +allowedTransitions(status) OrderStatus
+        +canTransition(from, to) Boolean
+    }
+
+    class RiskScorer {
+        <<service>>
+        +computeOrderRisk(order, context) RiskAssessment
+    }
+
+    class TraceabilityChain {
+        <<service>>
+        +computeEventHash(previousHash, event) String
+        +verifyRecordChain(record) ChainVerification
+        +appendEventToRecord(record, input) TraceEvent
+    }
+
+    Supplier "1" --> "0..*" Product : supplies
+    Supplier "1" --> "0..*" PurchaseOrder : fulfills
+    Supplier "1" --> "0..*" TraceabilityRecord : originates
+    Product "1" --> "0..*" OrderLine : ordered as
+    Product "1" --> "0..*" TraceabilityRecord : traced by
+    Product "*" --> "1" Facility : produced at
+    PurchaseOrder "1" *-- "1..*" OrderLine : contains
+    PurchaseOrder "1" --> "0..*" Shipment : has
+    PurchaseOrder "1" --> "0..*" OrderStatusChange : records
+    PurchaseOrder "1" --> "0..*" TraceabilityRecord : evidences
+    OrderLine "1" --> "0..*" TraceabilityRecord : covers
+    Shipment "1" *-- "0..*" ShipmentMilestone : records
+    Shipment "*" --> "1" Facility : routes through
+    TraceabilityRecord "1" *-- "1..*" TraceEvent : chains
+    TraceEvent "*" --> "1" Facility : occurs at
+    TraceabilityRecord "*" --> "*" Facility : facility path
+
+    OrderStateMachine ..> PurchaseOrder : validates transitions
+    RiskScorer ..> PurchaseOrder : scores
+    TraceabilityChain ..> TraceabilityRecord : verifies / appends

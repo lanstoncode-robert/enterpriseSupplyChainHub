@@ -1,0 +1,14 @@
+flowchart LR
+    classDef actor fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+    classDef system fill:#ecfeff,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+    classDef external fill:#fff7ed,stroke:#c2410c,stroke-width:1.5px,color:#7c2d12
+
+    Users([Business users<br/>Planner · Operations · Auditor · Admin]):::actor
+    Hub((Supply Chain Hub)):::system
+    ERP[ERP / supplier systems]:::external
+    Monitor[Monitoring stack]:::external
+
+    Users -->|"order, trace, and mutation requests"| Hub
+    Hub -->|"views, validation errors, evidence"| Users
+    ERP -.->|"reference data (offline seed)"| Hub
+    Hub -->|"structured logs, metrics, probes"| Monitor

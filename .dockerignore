@@ -1,0 +1,16 @@
+node_modules
+.diagram-tools
+.npm-cache
+data
+test
+artifacts
+.git
+.github
+*.log
+.env
+.env.*
+README.md
+DEPLOYMENT.md
+ARCHITECTURE.md
+DIAGRAMS.md
+docs

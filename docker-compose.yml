@@ -1,0 +1,44 @@
+name: supply-chain-hub
+
+services:
+  hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: supply-chain-hub:1.0.0
+    container_name: supply-chain-hub
+    ports:
+      - "${HUB_PORT:-8080}:8080"
+    environment:
+      NODE_ENV: production
+      PORT: "8080"
+      HOST: 0.0.0.0
+      DATA_DIR: /data
+      LOG_LEVEL: info
+      # Leave empty for an open demo; set a long random value in production.
+      API_TOKEN: ${API_TOKEN:-}
+      READ_ONLY: ${READ_ONLY:-false}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      TRUST_PROXY: "0"
+      ENABLE_HSTS: "false"
+    volumes:
+      - hub-data:/data
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  hub-data:
+    name: supply-chain-hub-data

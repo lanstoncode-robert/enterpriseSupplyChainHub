@@ -1,0 +1,118 @@
+erDiagram
+    direction LR
+
+    SUPPLIER ||--o{ PRODUCT : supplies
+    SUPPLIER ||--o{ PURCHASE_ORDER : fulfills
+    SUPPLIER ||--o{ TRACEABILITY_RECORD : originates
+
+    PRODUCT ||--o{ ORDER_LINE : "ordered as"
+    PRODUCT ||--o{ TRACEABILITY_RECORD : "traced by"
+    PRODUCT }o--|| FACILITY : "produced at"
+
+    PURCHASE_ORDER ||--|{ ORDER_LINE : contains
+    PURCHASE_ORDER ||--o{ SHIPMENT : has
+    PURCHASE_ORDER }o--|| FACILITY : "delivers to"
+    PURCHASE_ORDER ||--o{ TRACEABILITY_RECORD : evidences
+    PURCHASE_ORDER ||--o{ ORDER_STATUS_CHANGE : "audit trail"
+
+    ORDER_LINE ||--o{ TRACEABILITY_RECORD : covers
+    SHIPMENT ||--o{ SHIPMENT_MILESTONE : records
+    SHIPMENT }o--|| FACILITY : "routes through"
+    TRACEABILITY_RECORD ||--|{ TRACE_EVENT : chains
+    TRACE_EVENT }o--|| FACILITY : "occurs at"
+    TRACEABILITY_RECORD }o--o{ FACILITY : "path (JSON ids)"
+
+    SUPPLIER {
+        string id PK
+        string name
+        string country
+        string region
+        int tier
+        string riskLevel
+        float onTimeRate
+        int leadTimeDays
+    }
+
+    FACILITY {
+        string id PK
+        string name
+        string type
+        string city
+        string country
+    }
+
+    PRODUCT {
+        string id PK
+        string sku UK
+        string name
+        string category
+        float unitPrice
+        string supplierId FK
+        string originFacilityId FK
+        float carbonKgPerUnit
+    }
+
+    PURCHASE_ORDER {
+        string id PK
+        string poNumber UK
+        string supplierId FK
+        string status
+        string priority
+        datetime expectedDeliveryAt
+        float totalValue
+        string destinationFacilityId FK
+    }
+
+    ORDER_LINE {
+        string id PK
+        string orderId FK
+        string productId FK
+        int quantity
+        int receivedQuantity
+        string status
+    }
+
+    SHIPMENT {
+        string id PK
+        string orderId FK
+        string carrier
+        string mode
+        string status
+        int delayHours
+    }
+
+    SHIPMENT_MILESTONE {
+        string shipmentId FK
+        string status
+        datetime occurredAt
+        string location
+    }
+
+    TRACEABILITY_RECORD {
+        string id PK
+        string lotCode UK
+        string orderId FK
+        string orderLineId FK
+        string productId FK
+        string supplierId FK
+        float quantity
+        string serialRange
+    }
+
+    TRACE_EVENT {
+        string id PK
+        string recordId FK
+        int sequence
+        string type
+        datetime occurredAt
+        string facilityId FK
+        string actor
+        string integrityHash
+    }
+
+    ORDER_STATUS_CHANGE {
+        string orderId FK
+        string status
+        datetime at
+        string note
+    }

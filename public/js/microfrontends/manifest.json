@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-10-24T00:00:00.000Z",
+  "microfrontends": [
+    {
+      "name": "dashboard",
+      "title": "Dashboard",
+      "route": "/dashboard",
+      "entry": "/js/microfrontends/dashboard.js"
+    },
+    {
+      "name": "orders",
+      "title": "Orders",
+      "route": "/orders",
+      "entry": "/js/microfrontends/orders.js"
+    },
+    {
+      "name": "traceability",
+      "title": "Traceability",
+      "route": "/traceability",
+      "entry": "/js/microfrontends/traceability.js"
+    },
+    {
+      "name": "suppliers",
+      "title": "Suppliers",
+      "route": "/suppliers",
+      "entry": "/js/microfrontends/suppliers.js"
+    }
+  ]
+}

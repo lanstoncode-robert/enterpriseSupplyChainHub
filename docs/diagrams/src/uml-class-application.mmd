@@ -1,0 +1,90 @@
+classDiagram
+    direction LR
+
+    class HttpApp {
+        <<component>>
+        +handler(req, res)
+        +securityHeaders()
+        +rateLimit(ip)
+        +authorize(token)
+    }
+
+    class GraphQLExecutor {
+        <<component>>
+        +execute(schema, document, context, variables)
+        +coerceVariableValues()
+        +completeValue()
+    }
+
+    class GraphQLSchema {
+        <<component>>
+        +Map types
+        +Object queryType
+        +Object mutationType
+        +getType(name)
+        +getField(parent, field)
+    }
+
+    class SchemaStitcher {
+        <<component>>
+        +stitchSchemas(subgraphs)
+        +detectResolverCollisions()
+        +mergeTypeDefinitions()
+    }
+
+    class Subgraph {
+        <<interface>>
+        +String name
+        +String typeDefs
+        +Map resolvers
+    }
+
+    class OrdersSubgraph {
+        +Query resolvers
+        +Mutation resolvers
+        +Order field resolvers
+    }
+
+    class TraceabilitySubgraph {
+        +Query resolvers
+        +Mutation resolvers
+        +Verification field resolvers
+    }
+
+    class GatewaySubgraph {
+        +gatewayInfo resolver
+    }
+
+    class Repository {
+        <<service>>
+        +listOrders(args)
+        +createOrder(input)
+        +updateOrderStatus(input)
+        +listTraceRecords(filter)
+        +appendTraceEvent(input)
+        +metrics(months)
+        +createLoaders()
+    }
+
+    class JsonStore {
+        <<repository>>
+        +Object state
+        +Promise queue
+        +init()
+        +mutate(mutator)
+        +reset()
+        +health()
+    }
+
+    HttpApp --> GraphQLExecutor : invokes
+    GraphQLExecutor --> GraphQLSchema : reads types and fields
+    SchemaStitcher --> GraphQLSchema : builds one schema
+    SchemaStitcher o-- Subgraph : composes
+    OrdersSubgraph ..|> Subgraph
+    TraceabilitySubgraph ..|> Subgraph
+    GatewaySubgraph ..|> Subgraph
+    OrdersSubgraph --> Repository : reads and writes
+    TraceabilitySubgraph --> Repository : reads and writes
+    GraphQLExecutor --> Repository : resolves fields
+    Repository --> JsonStore : copy-on-write
+    JsonStore ..> JsonStore : atomic persist

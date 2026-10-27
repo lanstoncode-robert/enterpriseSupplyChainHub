@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    actor Planner
+    participant Shell as Browser shell
+    participant Client as GraphQL client
+    participant HTTP as HTTP app
+    participant Exec as GraphQL executor
+    participant Repo as Repository
+    participant Store as JsonStore
+
+    Planner->>Shell: open #/orders/PO-2026-1025
+    Shell->>Client: gql(DETAIL_QUERY, { poNumber })
+    Client->>HTTP: POST /graphql + bearer token
+
+    Note over HTTP: CORS, rate limit, body limit,<br/>optional constant-time token check
+    HTTP->>HTTP: parse, depth guard, validate
+
+    alt invalid or too complex
+        HTTP-->>Client: 200 { errors[] }
+        Client-->>Shell: throw GqlError
+        Shell-->>Planner: role="alert" + retry action
+    else valid
+        HTTP->>Exec: execute(document, context)
+        Exec->>Repo: order(poNumber)
+        Repo->>Store: read in-memory state
+        Store-->>Repo: order + supplierId
+        Exec->>Repo: supplier, lines, shipments, traceability
+        Repo->>Store: indexed lookups through request loaders
+        Store-->>Repo: related records
+        Exec-->>HTTP: data + errors
+        HTTP-->>Client: JSON + requestId
+        Client-->>Shell: data
+        Shell-->>Planner: accessible detail, focus h1
+    end

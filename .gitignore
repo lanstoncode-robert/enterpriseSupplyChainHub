@@ -1,0 +1,14 @@
+node_modules/
+.npm-cache/
+.diagram-tools/
+data/
+tmp-data*/
+.tmp-*/
+.chrome-cdp/
+artifacts/
+*.log
+.env
+.env.local
+coverage/
+.DS_Store
+Thumbs.db

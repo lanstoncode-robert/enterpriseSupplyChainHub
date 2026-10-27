@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor Operator
+    participant UI as Traceability UI
+    participant Client as GraphQL client
+    participant HTTP as HTTP app
+    participant Exec as GraphQL executor
+    participant Repo as Repository
+    participant Store as JsonStore
+    participant Chain as TraceabilityChain
+
+    Operator->>UI: submit custody event
+    UI->>Client: appendTraceEvent(input)
+    Client->>HTTP: POST /graphql (mutation)
+    HTTP->>HTTP: auth, read-only guard, validate
+
+    HTTP->>Exec: execute mutation
+    Exec->>Repo: appendTraceEvent(input)
+    Repo->>Store: mutate(draft)
+    Store->>Store: structuredClone(state)
+
+    Repo->>Chain: appendEventToRecord(record, input)
+    Chain->>Chain: next sequence + timestamp check
+    Chain->>Chain: SHA-256(previousHash + canonicalJSON(event))
+    Chain-->>Repo: event + updated record
+
+    Repo->>Store: persist(draft) atomic rename
+    Store-->>Repo: committed state
+    Repo-->>Exec: updated record
+
+    Exec->>Chain: verifyRecordChain(record)
+    alt chain valid
+        Chain-->>Exec: valid=true, checkedEvents=N
+    else chain broken
+        Chain-->>Exec: valid=false, brokenAt=eventId
+    end
+
+    Exec-->>HTTP: record + chain status
+    HTTP-->>Client: JSON result + requestId
+    Client-->>UI: data
+    UI->>UI: reload detail, focus heading
+    UI-->>Operator: toast + verified / exception badge

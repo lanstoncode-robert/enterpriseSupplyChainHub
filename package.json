@@ -1,0 +1,36 @@
+{
+  "name": "supply-chain-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise supply chain traceability and order management hub with a zero-runtime-dependency Node.js GraphQL gateway and vanilla JS microfrontends.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "test:watch": "node --test --watch",
+    "test:direct": "node test/graphql.test.js && node test/api.test.js && node test/data.test.js",
+    "build:css": "tailwindcss -i ./styles/app.css -o ./public/assets/app.css --minify",
+    "schema": "node scripts/print-schema.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "a11y": "node scripts/check-a11y.mjs",
+    "seed": "node scripts/reset-data.mjs",
+    "verify": "npm run test:direct && npm run a11y && npm run smoke"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  },
+  "keywords": [
+    "supply-chain",
+    "graphql",
+    "traceability",
+    "zero-dependency",
+    "microfrontend",
+    "accessibility"
+  ],
+  "license": "MIT"
+}

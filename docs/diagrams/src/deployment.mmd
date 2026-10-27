@@ -1,0 +1,46 @@
+flowchart TB
+    classDef device fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+    classDef edge fill:#fff7ed,stroke:#c2410c,stroke-width:1.5px,color:#7c2d12
+    classDef compute fill:#ecfeff,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+    classDef store fill:#eef2ff,stroke:#4338ca,stroke-width:1.5px,color:#312e81
+    classDef obs fill:#f5f3ff,stroke:#7c3aed,stroke-width:1.5px,color:#4c1d95
+
+    User([Operator browser]):::device
+
+    subgraph DMZ["DMZ / platform edge"]
+        Proxy[nginx or Caddy<br/>TLS 443 · HSTS]:::edge
+        IdP[Optional OIDC proxy<br/>per-user identity]:::edge
+    end
+
+    subgraph Host["Linux VM / container host"]
+        subgraph Container["supply-chain-hub container<br/>Node.js 22 · non-root UID"]
+            App[server.js<br/>HTTP :8080]:::compute
+            Assets[public/<br/>HTML · CSS · JS]:::compute
+            Schema[compiled GraphQL schema<br/>in memory]:::compute
+        end
+        Volume[(/data volume<br/>supply-chain.json)]:::store
+        Tmp[[/tmp tmpfs]]:::store
+    end
+
+    subgraph Observability["Observability"]
+        Prom[Prometheus]:::obs
+        Logs[Log collector]:::obs
+        Probe[Health probes]:::obs
+    end
+
+    Backup[(Backup storage)]:::store
+    Admin([Platform administrator]):::device
+
+    User -->|"HTTPS 443"| Proxy
+    Proxy -->|"HTTP 8080"| App
+    Admin -->|"deploy · env · token"| Proxy
+    IdP -.->|"optional auth layer"| Proxy
+
+    App --- Assets
+    App --- Schema
+    App --- Volume
+    App --- Tmp
+    App -->|"stdout JSON"| Logs
+    Prom -->|"scrape /metrics"| App
+    Probe -->|"/healthz · /readyz"| App
+    Volume -.->|"scheduled copy"| Backup
